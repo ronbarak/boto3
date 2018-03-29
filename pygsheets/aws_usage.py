@@ -96,6 +96,8 @@ def print_debug_headers(r, debug_header, region_h, reg=REGIONS):
     return region
  
 def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
+    header_data = dict()
+    cells_data = list()
     header_data[1] = Header(cell='A1', name='Image state', bold=True)
     header_data[2] = Header(cell='B1', name='Image ID', bold=True)
     header_data[3] = Header(cell='C1', name='Image type', bold=True)
@@ -108,8 +110,8 @@ def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
 
     for r in range(len(REGIONS)):
         region_h = REGIONS_H[r]
-        debug_header = "Images in {}".format(region_h)
-        region = print_debug_headers(r, debug_header=debug_header, reg=REGIONS, region_h=REGIONS_H)
+        #debug_header = "Images in {}".format(region_h)
+        region = print_debug_headers(r, debug_header="Images in {}".format(region_h), reg=REGIONS, region_h=REGIONS_H)
         client = boto3.resource('ec2', region_name=region)
         images = client.images.filter(Owners=['self'])
         for image in images:
@@ -118,26 +120,32 @@ def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
 
 
-def s3_worksheet_creation(spread_sheet):
-    worksheet = spread_sheet.add_worksheet("s3", rows=10, cols=6, src_tuple=None, src_worksheet=None, index=None)
-    Header = collections.namedtuple('Header', 'cell name bold')
+def s3_worksheet_creation(spread_sheet, Header, header_data, cells_data):
+#def s3_worksheet_creation(spread_sheet):
     header_data = dict()
+    cells_data = list()
+    #worksheet = spread_sheet.add_worksheet("s3", rows=10, cols=6, src_tuple=None, src_worksheet=None, index=None)
+    #Header = collections.namedtuple('Header', 'cell name bold')
+    #header_data = dict()
     header_data[1] = Header(cell='A1', name='Name', bold=True)
     header_data[2] = Header(cell='B1', name='CreationDate', bold=True)
     header_data[3] = Header(cell='C1', name='Region', bold=True)
     header_data[4] = Header(cell='D1', name='WorksheetCreated: %s' % currentDT, bold=False)
-    populate_headers(headers_data=header_data, worksheet=worksheet)
+    #populate_headers(headers_data=header_data, worksheet=worksheet)
+    worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="s3", worksheet_rows=10, worksheet_cols=4)
    
-    cells_data = list()
+    #cells_data = list()
     for r in range(len(REGIONS)):
-        region = REGIONS[r]
+        #region = REGIONS[r]
         region_h = REGIONS_H[r]
-        print()
-        print("{} buckets in {}".format("S3", region_h))
-        print("---------------------------")
+        #debug_header = "{} buckets in {}".format("S3", region_h)
+        region = print_debug_headers(r, debug_header="{} buckets in {}".format("S3", region_h), reg=REGIONS, region_h=REGIONS_H)
+        #print()
+        #print("{} buckets in {}".format("S3", region_h))
+        #print("---------------------------")
         #client = boto3.client('ec2', region_name=region)
-        s3 = boto3.client('s3', region_name=region)
-        buckets = s3.list_buckets()
+        client = boto3.client('s3', region_name=region)
+        buckets = client.list_buckets()
         for i in range(len(buckets['Buckets'])):
             cur = buckets['Buckets'][i]
             print(cur['Name'],"("+str(cur['CreationDate'])+")")
@@ -153,7 +161,7 @@ if __name__ == "__main__":
     cells_data = list()
 
     images_worksheet_creation(spread_sheet, Header, header_data, cells_data)
-    s3_worksheet_creation(spread_sheet)
+    s3_worksheet_creation(spread_sheet, Header, header_data, cells_data)
     security_groups_worksheet_creation(spread_sheet)
     # Delete the default sheet1
     spread_sheet.del_worksheet(spread_sheet.sheet1) 
