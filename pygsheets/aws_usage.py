@@ -44,12 +44,11 @@ def populate_cells(start_cell, cells_data, worksheet):
 def security_groups_worksheet_creation(spread_sheet):
     worksheet = spread_sheet.add_worksheet("security groups", rows=10, cols=6, src_tuple=None, src_worksheet=None, index=None)
     Header = collections.namedtuple('Header', 'cell name bold')
-    sg_header_data = dict()
-    sg_header_data[1] = Header(cell='A1', name='Name', bold=True)
-    #sg_header_data[2] = Header(cell='B1', name='CreationDate', bold=True)
-    sg_header_data[2] = Header(cell='B1', name='Region', bold=True)
-    sg_header_data[3] = Header(cell='C1', name='WorksheetCreated: %s' % currentDT, bold=False)
-    populate_headers(headers_data=sg_header_data, worksheet=worksheet)
+    header_data = dict()
+    header_data[1] = Header(cell='A1', name='Name', bold=True)
+    header_data[2] = Header(cell='B1', name='Region', bold=True)
+    header_data[3] = Header(cell='C1', name='WorksheetCreated: %s' % currentDT, bold=False)
+    populate_headers(headers_data=header_data, worksheet=worksheet)
     cells_data = list()
 
     for r in range(len(REGIONS)):
@@ -111,22 +110,6 @@ def s3_worksheet_creation(spread_sheet):
     populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
 
     
-def temp():
-    for i in range(len(REGIONS)):
-        region = REGIONS[i]
-        region_h = REGIONS_H[i]
-        print()
-        print("Images in {}".format(region_h))
-        print("-----------------------")
-        rds = boto3.setup_default_session(region_name=region)
-        rds = boto3.client('rds')
-
-        ec2 = boto3.resource('ec2')
-        images = ec2.images.filter(Owners=['self'])
-        for image in images:
-            print("[{}] ( {} {} {} {} )".format(image.state, image.id, image.image_type, image.architecture, image.description, image.platform))
-
-
 def images_worksheet_creation(spread_sheet):
     worksheet = spread_sheet.add_worksheet("AMI", rows=10, cols=8, src_tuple=None, src_worksheet=None, index=None)
     Header = collections.namedtuple('Header', 'cell name bold')
@@ -170,11 +153,12 @@ def images_worksheet_creation(spread_sheet):
 
 if __name__ == "__main__":
     spread_sheet = create_spreadsheet(spreadsheet_name = "jSonar AWS usage", outh_file = '../client_secret.json')
-    spread_sheet.link(syncToCloud=False)
+    #spread_sheet.link(syncToCloud=False)
 
     images_worksheet_creation(spread_sheet)
     s3_worksheet_creation(spread_sheet)
     security_groups_worksheet_creation(spread_sheet)
+    spread_sheet.del_worksheet(spread_sheet.sheet1)
 
     #spread_sheet.del_worksheet(spread_sheet.sheet1)
     # share the sheet by email
