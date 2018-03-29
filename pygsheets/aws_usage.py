@@ -128,17 +128,17 @@ def temp():
 
 
 def images_worksheet_creation(spread_sheet):
-    worksheet = spread_sheet.add_worksheet("AMI", rows=10, cols=6, src_tuple=None, src_worksheet=None, index=None)
+    worksheet = spread_sheet.add_worksheet("AMI", rows=10, cols=8, src_tuple=None, src_worksheet=None, index=None)
     Header = collections.namedtuple('Header', 'cell name bold')
     header_data = dict()
     header_data[1] = Header(cell='A1', name='Image state', bold=True)
     header_data[2] = Header(cell='B1', name='Image ID', bold=True)
     header_data[3] = Header(cell='C1', name='Image type', bold=True)
-    header_data[4] = Header(cell='C1', name='Image architecture', bold=True)
-    header_data[5] = Header(cell='C1', name='Image description', bold=True)
-    header_data[6] = Header(cell='C1', name='Image platform', bold=True)
-    header_data[7] = Header(cell='C1', name='Region', bold=True)
-    header_data[8] = Header(cell='D1', name='WorksheetCreated: %s' % currentDT, bold=False)
+    header_data[4] = Header(cell='D1', name='Image architecture', bold=True)
+    header_data[5] = Header(cell='E1', name='Image description', bold=True)
+    header_data[6] = Header(cell='F1', name='Image platform', bold=True)
+    header_data[7] = Header(cell='G1', name='Region', bold=True)
+    header_data[8] = Header(cell='H1', name='WorksheetCreated: %s' % currentDT, bold=False)
     populate_headers(headers_data=header_data, worksheet=worksheet)
 
     cells_data = list()
