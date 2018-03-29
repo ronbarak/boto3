@@ -1,6 +1,5 @@
 import collections
 import boto3, botocore
-#import csv
 import datetime
 import json
 import numpy as np
@@ -17,7 +16,6 @@ pp = pprint.PrettyPrinter(indent=4)
 currentDT = str(datetime.datetime.now())
 
 
-#def create_spreadsheet(outh_file, spreadsheet_name = "jSonar AWS usage"):
 def create_spreadsheet(outh_file, spreadsheet_name = SPREADSHEET_NAME):
     client = pygsheets.authorize(outh_file=outh_file, outh_nonlocal=True)
     client.list_ssheets(parent_id=None)
@@ -69,7 +67,6 @@ def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
 
     for r in range(len(REGIONS)):
         region_h = REGIONS_H[r]
-        #debug_header = "Images in {}".format(region_h)
         region = print_debug_headers(r, debug_header="Images in {}".format(region_h), reg=REGIONS, region_h=REGIONS_H)
         client = boto3.resource('ec2', region_name=region)
         images = client.images.filter(Owners=['self'])
@@ -82,23 +79,14 @@ def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
 def security_groups_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     header_data = dict()
     cells_data = list()
-    #worksheet = spread_sheet.add_worksheet("security groups", rows=10, cols=6, src_tuple=None, src_worksheet=None, index=None)
-    #Header = collections.namedtuple('Header', 'cell name bold')
-    #header_data = dict()
     header_data[1] = Header(cell='A1', name='Name', bold=True)
     header_data[2] = Header(cell='B1', name='Region', bold=True)
     header_data[3] = Header(cell='C1', name='WorksheetCreated: %s' % currentDT, bold=False)
     worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="security groups", worksheet_rows=10, worksheet_cols=3)
-    #populate_headers(headers_data=header_data, worksheet=worksheet)
-    #cells_data = list()
 
     for r in range(len(REGIONS)):
-        #region = REGIONS[r]
         region_h = REGIONS_H[r]
         region = print_debug_headers(r, debug_header="{} idle security groups in {}".format("EC2", region_h), reg=REGIONS, region_h=REGIONS_H)
-        #print()
-        #print("{} idle security groups in {}".format("EC2", region_h))
-        #print("-----------------------------------------")
 
         client = boto3.client('ec2', region_name=region)
         all_instances = client.describe_instances()
@@ -116,12 +104,9 @@ def security_groups_worksheet_creation(spread_sheet, Header, header_data, cells_
           sg_set.add(security_group ["GroupName"])
         
         idle_sg = sg_set - instance_sg_set
-        #print(list(idle_sg))
         for isg in idle_sg:
-            #cells_data.append([list(idle_sg), region_h])
             print(isg, region_h)
             cells_data.append([isg, region_h])
-    #populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
     return cells_data, worksheet
 
 
