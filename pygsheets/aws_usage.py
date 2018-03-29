@@ -41,47 +41,6 @@ def populate_cells(start_cell, cells_data, worksheet):
     worksheet.update_cells(start_cell, cells_data)
 
 
-def security_groups_worksheet_creation(spread_sheet):
-    worksheet = spread_sheet.add_worksheet("security groups", rows=10, cols=6, src_tuple=None, src_worksheet=None, index=None)
-    Header = collections.namedtuple('Header', 'cell name bold')
-    header_data = dict()
-    header_data[1] = Header(cell='A1', name='Name', bold=True)
-    header_data[2] = Header(cell='B1', name='Region', bold=True)
-    header_data[3] = Header(cell='C1', name='WorksheetCreated: %s' % currentDT, bold=False)
-    populate_headers(headers_data=header_data, worksheet=worksheet)
-    cells_data = list()
-
-    for r in range(len(REGIONS)):
-        region = REGIONS[r]
-        region_h = REGIONS_H[r]
-        print()
-        print("{} idle security groups in {}".format("EC2", region_h))
-        print("-----------------------------------------")
-
-        client = boto3.client('ec2', region_name=region)
-        all_instances = client.describe_instances()
-        all_sg = client.describe_security_groups()
-
-        instance_sg_set = set()
-        sg_set = set()
-
-        for reservation in all_instances["Reservations"] :
-          for instance in reservation["Instances"]: 
-            for sg in instance["SecurityGroups"]:
-              instance_sg_set.add(sg["GroupName"]) 
-        
-        for security_group in all_sg["SecurityGroups"] :
-          sg_set.add(security_group ["GroupName"])
-        
-        idle_sg = sg_set - instance_sg_set
-        #print(list(idle_sg))
-        for isg in idle_sg:
-            #cells_data.append([list(idle_sg), region_h])
-            cells_data.append([isg, region_h])
-            print(isg, region_h)
-    populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
-
-
 def worksheet_creation(spread_sheet, header_data, worksheet_name, worksheet_rows=10, worksheet_cols=8, REGIONS=REGIONS, REGIONS_H=REGIONS_H):
     worksheet = spread_sheet.add_worksheet(worksheet_name, rows=worksheet_rows, cols=worksheet_cols, src_tuple=None, src_worksheet=None, index=None)
     populate_headers(headers_data=header_data, worksheet=worksheet)
@@ -117,6 +76,51 @@ def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
         for image in images:
             print("[{}] ( {} {} {} {} )".format(image.state, image.id, image.image_type, image.architecture, image.description, image.platform))
             cells_data.append([image.state, image.id, image.image_type, image.architecture, image.description, image.platform, region_h])
+    return cells_data, worksheet
+
+
+def security_groups_worksheet_creation(spread_sheet, Header, header_data, cells_data):
+    header_data = dict()
+    cells_data = list()
+    #worksheet = spread_sheet.add_worksheet("security groups", rows=10, cols=6, src_tuple=None, src_worksheet=None, index=None)
+    #Header = collections.namedtuple('Header', 'cell name bold')
+    #header_data = dict()
+    header_data[1] = Header(cell='A1', name='Name', bold=True)
+    header_data[2] = Header(cell='B1', name='Region', bold=True)
+    header_data[3] = Header(cell='C1', name='WorksheetCreated: %s' % currentDT, bold=False)
+    worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="security groups", worksheet_rows=10, worksheet_cols=3)
+    #populate_headers(headers_data=header_data, worksheet=worksheet)
+    #cells_data = list()
+
+    for r in range(len(REGIONS)):
+        #region = REGIONS[r]
+        region_h = REGIONS_H[r]
+        region = print_debug_headers(r, debug_header="{} idle security groups in {}".format("EC2", region_h), reg=REGIONS, region_h=REGIONS_H)
+        #print()
+        #print("{} idle security groups in {}".format("EC2", region_h))
+        #print("-----------------------------------------")
+
+        client = boto3.client('ec2', region_name=region)
+        all_instances = client.describe_instances()
+        all_sg = client.describe_security_groups()
+
+        instance_sg_set = set()
+        sg_set = set()
+
+        for reservation in all_instances["Reservations"] :
+          for instance in reservation["Instances"]: 
+            for sg in instance["SecurityGroups"]:
+              instance_sg_set.add(sg["GroupName"]) 
+        
+        for security_group in all_sg["SecurityGroups"] :
+          sg_set.add(security_group ["GroupName"])
+        
+        idle_sg = sg_set - instance_sg_set
+        #print(list(idle_sg))
+        for isg in idle_sg:
+            #cells_data.append([list(idle_sg), region_h])
+            print(isg, region_h)
+            cells_data.append([isg, region_h])
     #populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
     return cells_data, worksheet
 
@@ -140,7 +144,6 @@ def s3_worksheet_creation(spread_sheet, Header, header_data, cells_data):
             print(cur['Name'],"("+str(cur['CreationDate'])+")")
             creation_date = json.dumps(cur['CreationDate'], indent=4, sort_keys=True, default=str)
             cells_data.append([cur['Name'], creation_date, region_h])
-    #populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
     return cells_data, worksheet
 
 
@@ -154,7 +157,9 @@ if __name__ == "__main__":
     populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
     cells_data, worksheet = s3_worksheet_creation(spread_sheet, Header, header_data, cells_data)
     populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
-    security_groups_worksheet_creation(spread_sheet)
+    cells_data, worksheet = security_groups_worksheet_creation(spread_sheet, Header, header_data, cells_data)
+    populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
+
     # Delete the default sheet1
     spread_sheet.del_worksheet(spread_sheet.sheet1) 
 
