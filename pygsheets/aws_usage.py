@@ -129,16 +129,16 @@ def s3_worksheet_creation(spread_sheet, Header, header_data, cells_data):
 
 
 def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
-    #REGIONS = ( 'us-east-1', )
-    #REGIONS_H = ( 'N. Virginia', )
-    #STATUSES = ['pending', 'running', 'rebooting', 'stopping', 'stopped', 'shutting-down', 'terminated']
-    STATUSES = ['running', 'stopped']
+    STATUSES = ['pending', 'running', 'rebooting', 'stopping', 'stopped', 'shutting-down', 'terminated']
+    #STATUSES = ['running', 'stopped']
 
-    header_data[1] = Header(cell='A1', name='Name', bold=True)
-    header_data[2] = Header(cell='B1', name='CreationDate', bold=True)
-    header_data[3] = Header(cell='C1', name='Region', bold=True)
-    header_data[4] = Header(cell='D1', name='WorksheetCreated: %s' % currentDT, bold=False)
-    worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="s3", worksheet_rows=10, worksheet_cols=4)
+    header_data[1] = Header(cell='A1', name='Status', bold=True)
+    header_data[2] = Header(cell='B1', name='tags', bold=True)
+    header_data[3] = Header(cell='C1', name='ID', bold=True)
+    header_data[4] = Header(cell='D1', name='Type', bold=True)
+    header_data[5] = Header(cell='E1', name='Region', bold=True)
+    header_data[6] = Header(cell='F1', name='WorksheetCreated: %s' % currentDT, bold=False)
+    worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="ec2", worksheet_rows=10, worksheet_cols=6)
    
     for r in range(len(REGIONS)):
         region_h = REGIONS_H[r]
@@ -157,13 +157,13 @@ def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
                 record = list()
                 print("[%s] " % (status),end="")
                 record.append(status)
-                """
+                tags = ""
                 for tag in instance.tags:
-                        print("%s, " % (tag['Value']),end="")
-                        record.append("%s, " % (tag['Value']))
-                """
+                    print("%s, " % (tag['Value']),end="")
+                    tags += "%s; " % tag['Value']
+                record.append(tags)
                 print("("+instance.id, instance.instance_type+")")
-                record.extend([instance.id, instance.instance_type])
+                record.extend([instance.id, instance.instance_type, region_h])
                 #print("record:", record)
                 status_record.append(record)
             print()
@@ -172,7 +172,8 @@ def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
         #print(">>> region_record <<<")
         #pp.pprint(region_record)
         #print("region_record[0]:", region_record[0])
-        cells_data.extend(region_record[0])
+        for i in range(len(region_record)):
+            cells_data.extend(region_record[i])
         print("cells_data:", cells_data)
     return cells_data, worksheet
 
@@ -197,7 +198,7 @@ def main():
     # share the sheet by email
     spread_sheet.share("rbarak@jsonar.com")
     print()
-    print('share spreadsheet with rbarak@jsonar.com')
+    print('sharing spreadsheet with rbarak@jsonar.com')
 
 
 if __name__ == "__main__":
