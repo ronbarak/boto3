@@ -132,7 +132,7 @@ def s3_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     return cells_data, worksheet
 
 
-if __name__ == "__main__":
+def main():
     spread_sheet = create_spreadsheet(spreadsheet_name = "jSonar AWS usage", outh_file = '../client_secret.json')
     Header = collections.namedtuple('Header', 'cell name bold')
     header_data = dict()
@@ -153,3 +153,7 @@ if __name__ == "__main__":
     spread_sheet.share("rbarak@jsonar.com")
     print()
     print('spread_sheet.share("rbarak@jsonar.com")')
+
+
+if __name__ == "__main__":
+    main()
