@@ -51,10 +51,9 @@ def print_debug_headers(r, debug_header, region_h, reg=REGIONS):
     print(debug_header)
     print("-" * len(debug_header))
     return region
+
  
 def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
-    header_data = dict()
-    cells_data = list()
     header_data[1] = Header(cell='A1', name='Image state', bold=True)
     header_data[2] = Header(cell='B1', name='Image ID', bold=True)
     header_data[3] = Header(cell='C1', name='Image type', bold=True)
@@ -77,8 +76,6 @@ def images_worksheet_creation(spread_sheet, Header, header_data, cells_data):
 
 
 def security_groups_worksheet_creation(spread_sheet, Header, header_data, cells_data):
-    header_data = dict()
-    cells_data = list()
     header_data[1] = Header(cell='A1', name='Name', bold=True)
     header_data[2] = Header(cell='B1', name='Region', bold=True)
     header_data[3] = Header(cell='C1', name='WorksheetCreated: %s' % currentDT, bold=False)
@@ -111,8 +108,6 @@ def security_groups_worksheet_creation(spread_sheet, Header, header_data, cells_
 
 
 def s3_worksheet_creation(spread_sheet, Header, header_data, cells_data):
-    header_data = dict()
-    cells_data = list()
     header_data[1] = Header(cell='A1', name='Name', bold=True)
     header_data[2] = Header(cell='B1', name='CreationDate', bold=True)
     header_data[3] = Header(cell='C1', name='Region', bold=True)
@@ -138,21 +133,19 @@ def main():
     header_data = dict()
     cells_data = list()
 
-    cells_data, worksheet = images_worksheet_creation(spread_sheet, Header, header_data, cells_data)
-    populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
-    cells_data, worksheet = s3_worksheet_creation(spread_sheet, Header, header_data, cells_data)
-    populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
-    cells_data, worksheet = security_groups_worksheet_creation(spread_sheet, Header, header_data, cells_data)
-    populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
-
+    for func in [images_worksheet_creation, s3_worksheet_creation, security_groups_worksheet_creation]:
+        header_data = dict()
+        cells_data = list()
+        cells_data, worksheet = func(spread_sheet, Header, header_data, cells_data)
+        populate_cells(start_cell='A2', cells_data=cells_data, worksheet=worksheet)
+        
     # Delete the default sheet1
     spread_sheet.del_worksheet(spread_sheet.sheet1) 
 
-    #spread_sheet.del_worksheet(spread_sheet.sheet1)
     # share the sheet by email
     spread_sheet.share("rbarak@jsonar.com")
     print()
-    print('spread_sheet.share("rbarak@jsonar.com")')
+    print('share spreadsheet with rbarak@jsonar.com')
 
 
 if __name__ == "__main__":
