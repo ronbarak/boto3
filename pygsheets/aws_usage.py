@@ -163,7 +163,7 @@ def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     for r in range(len(REGIONS)):
         region_h = REGIONS_H[r]
         region = print_debug_headers(r, debug_header="{} instances in {}".format("EC2", region_h), reg=REGIONS, region_h=REGIONS_H)
-        client = boto3.client('rds', region_name=region)
+        #client = boto3.client('rds', region_name=region)
         ec2 = boto3.resource('ec2', region_name=region)
         region_record = list()
         for status in STATUSES:
@@ -198,10 +198,10 @@ def main():
     cells_data = list()
 
     for func in (   ec2_worksheet_creation,
-                    elastic_IP_worksheet_creation,
-                    images_worksheet_creation, 
-                    s3_worksheet_creation, 
-                    security_groups_worksheet_creation
+                    #elastic_IP_worksheet_creation,
+                    #images_worksheet_creation, 
+                    #s3_worksheet_creation, 
+                    #security_groups_worksheet_creation
                 ):
         header_data = dict()
         cells_data = list()
