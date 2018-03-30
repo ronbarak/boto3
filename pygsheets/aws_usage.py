@@ -128,46 +128,25 @@ def s3_worksheet_creation(spread_sheet, Header, header_data, cells_data):
 
 
 def elastic_IP_worksheet_creation(spread_sheet, Header, header_data, cells_data):
-    header_data[1] = Header(cell='A1', name='Name', bold=True)
-    header_data[2] = Header(cell='B1', name='CreationDate', bold=True)
-    header_data[3] = Header(cell='C1', name='Region', bold=True)
-    header_data[4] = Header(cell='D1', name='WorksheetCreated: %s' % currentDT, bold=False)
-    worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="s3", worksheet_rows=10, worksheet_cols=4)
+    header_data[1] = Header(cell='A1', name='Public IP', bold=True)
+    header_data[2] = Header(cell='B1', name='Private IP', bold=True)
+    header_data[3] = Header(cell='C1', name='Allocation ID', bold=True)
+    header_data[4] = Header(cell='D1', name='Instance ID', bold=True)
+    header_data[5] = Header(cell='E1', name='Network interface ID', bold=True)
+    header_data[6] = Header(cell='F1', name='Network interface owner ID', bold=True)
+    header_data[7] = Header(cell='G1', name='Region', bold=True)
+    header_data[8] = Header(cell='I1', name='WorksheetCreated: %s' % currentDT, bold=False)
+    worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="elastic IPs", worksheet_rows=2, worksheet_cols=9)
    
     for r in range(len(REGIONS)):
         region_h = REGIONS_H[r]
         region = print_debug_headers(r, debug_header="{} elastic IPs in {}".format("EC2", region_h), reg=REGIONS, region_h=REGIONS_H)
-        #client = boto3.resource('ec2', region_name=region)
         ec2 = boto3.resource('ec2', region_name=region)
-        #images = client.images.filter(Owners=['self'])
         eIPs = list(ec2.vpc_addresses.all())
         for eIP in eIPs:
-            print("[{}] ( {} {} {} {} {} )".format(eIP.public_ip, eIP.private_ip_address, eIP.allocation_id, eIP.instance_id, eIP.network_interface_id, eIP.network_interface_owner_id, eIP.public_ip))
-        #for image in images:
-        #    print("[{}] ( {} {} {} {} )".format(image.state, image.id, image.image_type, image.architecture, image.description, image.platform))
-            #cells_data.append([image.state, image.id, image.image_type, image.architecture, image.description, image.platform, region_h])
-            cells_data.append([eIP.public_ip, eIP.private_ip_address, eIP.allocation_id, eIP.instance_id, eIP.network_interface_id, eIP.network_interface_owner_id, eIP.public_ip])
+            print("[{}] ( {} {} {} {} {} )".format(eIP.public_ip, eIP.private_ip_address, eIP.allocation_id, eIP.instance_id, eIP.network_interface_id, eIP.network_interface_owner_id))
+            cells_data.append([eIP.public_ip, eIP.private_ip_address, eIP.allocation_id, eIP.instance_id, eIP.network_interface_id, eIP.network_interface_owner_id, region_h])
     return cells_data, worksheet
-
-"""
-import boto3
-
-STATUSES = ['running', 'stopped']
-REGIONS = ('us-west-1', 'us-east-1', 'us-west-2')
-REGIONS_H = ('N. California', 'N. Virginia', 'Oregon')
-
-for i in range(len(REGIONS)):
-    region = REGIONS[i]
-    region_h = REGIONS_H[i]
-    print()
-    print("{} elastic IPs in {}".format("EC2", region_h))
-    print("--------------------------------")
-    ec2 = boto3.resource('ec2', region_name=region)
-    client = boto3.client('ec2', region_name=region)
-    eIPs = list(ec2.vpc_addresses.all())
-    for eIP in eIPs:
-        print("[{}] ( {} {} {} {} {} )".format(eIP.public_ip, eIP.private_ip_address, eIP.allocation_id, eIP.instance_id, eIP.network_interface_id, eIP.network_interface_owner_id, eIP.public_ip))
-"""
 
 
 def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
@@ -218,11 +197,11 @@ def main():
     header_data = dict()
     cells_data = list()
 
-    for func in (   #ec2_worksheet_creation,
+    for func in (   ec2_worksheet_creation,
                     elastic_IP_worksheet_creation,
-                    #images_worksheet_creation, 
-                    #s3_worksheet_creation, 
-                    #security_groups_worksheet_creation
+                    images_worksheet_creation, 
+                    s3_worksheet_creation, 
+                    security_groups_worksheet_creation
                 ):
         header_data = dict()
         cells_data = list()
