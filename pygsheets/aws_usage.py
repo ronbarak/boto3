@@ -124,13 +124,11 @@ def s3_worksheet_creation(spread_sheet, Header, header_data, cells_data):
             print(cur['Name'],"("+str(cur['CreationDate'])+")")
             creation_date = json.dumps(cur['CreationDate'], indent=4, sort_keys=True, default=str)
             cells_data.append([cur['Name'], creation_date, region_h])
-            #print("cells_data:", cells_data)
     return cells_data, worksheet
 
 
 def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     STATUSES = ['pending', 'running', 'rebooting', 'stopping', 'stopped', 'shutting-down', 'terminated']
-    #STATUSES = ['running', 'stopped']
 
     header_data[1] = Header(cell='A1', name='Status', bold=True)
     header_data[2] = Header(cell='B1', name='tags', bold=True)
@@ -143,9 +141,7 @@ def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     for r in range(len(REGIONS)):
         region_h = REGIONS_H[r]
         region = print_debug_headers(r, debug_header="{} instances in {}".format("EC2", region_h), reg=REGIONS, region_h=REGIONS_H)
-        #rds = boto3.setup_default_session(region_name=region)
         client = boto3.client('rds', region_name=region)
-        #client = boto3.client('s3', region_name=region)
         ec2 = boto3.resource('ec2', region_name=region)
         region_record = list()
         for status in STATUSES:
@@ -164,17 +160,12 @@ def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
                 record.append(tags)
                 print("("+instance.id, instance.instance_type+")")
                 record.extend([instance.id, instance.instance_type, region_h])
-                #print("record:", record)
                 status_record.append(record)
-            print()
-            region_record.append(status_record)
-            print("status_record:", status_record)
-        #print(">>> region_record <<<")
-        #pp.pprint(region_record)
-        #print("region_record[0]:", region_record[0])
+            if len(list(instances)):
+                print()
+                region_record.append(status_record)
         for i in range(len(region_record)):
             cells_data.extend(region_record[i])
-        print("cells_data:", cells_data)
     return cells_data, worksheet
 
 
@@ -184,9 +175,11 @@ def main():
     header_data = dict()
     cells_data = list()
 
-    #for func in (images_worksheet_creation, s3_worksheet_creation, security_groups_worksheet_creation):
-    for func in (ec2_worksheet_creation,):
-    #for func in (s3_worksheet_creation,):
+    for func in (   ec2_worksheet_creation,
+                    images_worksheet_creation, 
+                    s3_worksheet_creation, 
+                    security_groups_worksheet_creation
+                ):
         header_data = dict()
         cells_data = list()
         cells_data, worksheet = func(spread_sheet, Header, header_data, cells_data)
