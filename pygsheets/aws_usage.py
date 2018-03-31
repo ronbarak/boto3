@@ -163,7 +163,6 @@ def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     for r in range(len(REGIONS)):
         region_h = REGIONS_H[r]
         region = print_debug_headers(r, debug_header="{} instances in {}".format("EC2", region_h), reg=REGIONS, region_h=REGIONS_H)
-        #client = boto3.client('rds', region_name=region)
         ec2 = boto3.resource('ec2', region_name=region)
         region_record = list()
         for status in STATUSES:
@@ -191,17 +190,57 @@ def ec2_worksheet_creation(spread_sheet, Header, header_data, cells_data):
     return cells_data, worksheet
 
 
+def snapshot_worksheet_creation(spread_sheet, Header, header_data, cells_data):
+    header_data[1] = Header(cell='A1', name='Status', bold=True)
+    header_data[2] = Header(cell='B1', name='Volume size (GB)', bold=True)
+    header_data[3] = Header(cell='C1', name='Volume ID', bold=True)
+    header_data[4] = Header(cell='D1', name='Snapshot ID', bold=True)
+    header_data[5] = Header(cell='E1', name='Description', bold=True)
+    header_data[6] = Header(cell='F1', name='Start time', bold=True)
+    header_data[7] = Header(cell='G1', name='Owner ID', bold=True)
+    header_data[8] = Header(cell='H1', name='Tags', bold=True)
+    header_data[9] = Header(cell='I1', name='Region', bold=True)
+    header_data[10] = Header(cell='J1', name='WorksheetCreated: %s' % currentDT, bold=False)
+    worksheet = worksheet_creation(spread_sheet, header_data, worksheet_name="snapshot", worksheet_rows=50000, worksheet_cols=len(header_data)+1)
+   
+    for r in range(len(REGIONS)):
+        region_h = REGIONS_H[r]
+        region = print_debug_headers(r, debug_header="snapshots in {}".format(region_h), reg=REGIONS, region_h=REGIONS_H)
+        ec2 = boto3.resource('ec2', region_name=region)
+        snapshots = ec2.snapshots.filter()
+        len_snapshots = len(list(snapshots))
+        region_record = list()
+        for snapshot in snapshots:
+            record = list()
+            tags = ""
+            if snapshot.tags:
+                for tag in snapshot.tags:
+                    #print(" %s;" % (tag['Value']),end="")
+                    tags += "%s; " % tag['Value']
+            print("[{0}] ({1}, {2}, {3} {4} {5} {6})".format(snapshot.state, snapshot.volume_size, snapshot.volume_id, snapshot.id, snapshot.description, snapshot.start_time, snapshot.owner_id, tags))
+            record.append([snapshot.state, snapshot.volume_size, snapshot.volume_id, snapshot.id, snapshot.description, "%s" % snapshot.start_time, snapshot.owner_id, tags, region_h])
+            #if len_snapshots:
+            region_record.append(record)
+        for i in range(len(region_record)):
+            cells_data.extend(region_record[i])
+    #print("cells_data:", cells_data)
+    print("type(cells_data), len(cells_data):", type(cells_data), len(cells_data))
+    #raise SystemExit
+    return cells_data, worksheet
+
+
 def main():
     spread_sheet = create_spreadsheet(spreadsheet_name = "jSonar AWS usage", outh_file = '../client_secret.json')
     Header = collections.namedtuple('Header', 'cell name bold')
     header_data = dict()
     cells_data = list()
 
-    for func in (   ec2_worksheet_creation,
+    for func in (   #ec2_worksheet_creation,
                     #elastic_IP_worksheet_creation,
                     #images_worksheet_creation, 
                     #s3_worksheet_creation, 
                     #security_groups_worksheet_creation
+                    snapshot_worksheet_creation,
                 ):
         header_data = dict()
         cells_data = list()
